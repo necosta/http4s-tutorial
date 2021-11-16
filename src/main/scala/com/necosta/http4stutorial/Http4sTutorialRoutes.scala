@@ -40,18 +40,24 @@ object Http4sTutorialRoutes {
 
     HttpRoutes.of[F] {
       case GET -> Root / "movies" :? DirectorQueryParamMatcher(director) +& YearQueryParamMatcher(maybeYear) =>
-        val movieByDirector = findMoviesByDirector(director)
-        (movieByDirector, maybeYear) match {
-          case (Some(nelMoviesByDirector), Some(y)) =>
+        maybeYear match {
+          case Some(y) =>
             y.fold(
-              _ => BadRequest("The given year is not valid"),
-              { year =>
-                val moviesByDirAndYear = nelMoviesByDirector.filter(_.year.getValue == year.getValue)
-                Ok(moviesByDirAndYear)
+              e => {
+                implicit val showError: Show[ParseFailure] = pf => s"${pf.message}"
+                BadRequest(s"The given year is not valid. Error: ${e.show}")
+              },
+              { year => findMoviesByDirectorAndYear(director, year) match {
+                  case Some(moviesByDirAndYear) => Ok(moviesByDirAndYear)
+                  case None => NotFound(s"No movies found for director $director and year $year")
+                }
               }
             )
-          case (Some(nelMoviesByDirector), None) => Ok(nelMoviesByDirector)
-          case (None, _) => NotFound(s"No movies found for director $director")
+          case None =>
+            findMoviesByDirector(director) match {
+              case Some(moviesByDir) => Ok(moviesByDir)
+              case None => NotFound(s"No movies found for director $director")
+            }
         }
     }
   }

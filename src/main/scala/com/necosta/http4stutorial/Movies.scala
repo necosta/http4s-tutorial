@@ -49,8 +49,15 @@ object Movies {
   def findMovieById(movieId: UUID): Option[Movie] =
     movies.get(movieId.toString)
 
+  def findMoviesByDirectorAndYear(director: String, year: Year): Option[List[Movie]] =
+    listToOption(movies.values.filter(m => m.director == director && m.year.getValue == year.getValue))
+
   def findMoviesByDirector(director: String): Option[List[Movie]] =
-    Option(movies.values.filter(_.director == director).toList).filter(_.nonEmpty).map(List[Movie])
+    listToOption(movies.values.filter(_.director == director))
+
+  // ToDo: Move to Utils file?
+  def listToOption[T](list: Iterable[T]): Option[List[T]] =
+    Option(list.toList).filter(_.nonEmpty).map(List[T])
 
   implicit val movieDecoder: Decoder[Movie] = deriveDecoder[Movie]
   implicit def movieEntityDecoder[F[_]: Concurrent]: EntityDecoder[F, Movie] = jsonOf
