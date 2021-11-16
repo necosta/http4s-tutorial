@@ -3,7 +3,7 @@ package com.necosta.http4stutorial
 import cats._
 import cats.effect._
 import cats.implicits._
-import com.necosta.http4stutorial.Http4sTutorialUtils.{DirectorQueryParamMatcher, YearQueryParamMatcher}
+import com.necosta.http4stutorial.Http4sTutorialUtils._
 import org.http4s._
 import org.http4s.dsl.Http4sDsl
 
@@ -69,9 +69,9 @@ object Http4sTutorialRoutes {
 
     HttpRoutes.of[F] {
       case GET -> Root / "directors" / Directors(director) =>
-        allDirectors.get(director.toString) match {
+        findDirector(director.toString.toLowerCase) match {
           case Some(dir) => Ok(dir)
-          case _ => NotFound(s"No director called $director found")
+          case _ => NotFound(s"No director called ${director.toString} found")
         }
     }
   }

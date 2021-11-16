@@ -10,18 +10,27 @@ import org.http4s.circe.{jsonEncoderOf, jsonOf}
 import scala.collection.mutable
 import scala.util.Try
 
+trait Directors[F[_]]{
+  def get: F[Directors.Director]
+}
+
 object Directors {
 
-  case class Director(firstName: String, lastName: String) {
+  final case class Director(firstName: String, lastName: String) {
     override def toString = s"$firstName $lastName"
   }
 
-  val allDirectors: mutable.Map[Actor, Director] =
+  // ToDo: Move hardcoded data
+  private val allDirectors: mutable.Map[Actor, Director] =
     mutable.Map(
       "Zack Snyder" -> Director("Zack", "Snyder"),
       "John Doe" -> Director("John", "Doe"),
       "Clint Eastwood" -> Director("Clint", "Eastwood")
-    )
+    ).map { case(k, v) => (k.toLowerCase, v)}
+
+  def findDirector(key: String): Option[Director] = {
+    allDirectors.get(key.toLowerCase)
+  }
 
   def unapply(str: String): Option[Director] = {
     if (str.nonEmpty && str.matches(".* .*")) {

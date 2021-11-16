@@ -22,9 +22,7 @@ object Movies {
   def apply[F[_]](implicit ev: Movies[F]): Movies[F] = ev
 
   type Actor = String
-
-  case class Movie(id: String, title: String, year: Year, actors: List[Actor], director: String)
-
+  final case class Movie(id: String, title: String, year: Year, actors: List[Actor], director: String)
   final case class MovieError(e: Throwable) extends RuntimeException
 
   def impl[F[_]: Concurrent](C: Client[F]): Movies[F] = new Movies[F]{
@@ -36,7 +34,8 @@ object Movies {
     }
   }
 
-  val snjl: Movie = Movie(
+  // ToDo: Move hardcoded data
+  val allMovies: Movie = Movie(
     "6bcbca1e-efd3-411d-9f7c-14b872444fce",
     "Zack Snyder's Justice League",
     java.time.Year.of(2021),
@@ -44,7 +43,7 @@ object Movies {
     "Zack Snyder"
   )
 
-  val movies: Map[String, Movie] = Map(snjl.id -> snjl)
+  val movies: Map[String, Movie] = Map(allMovies.id -> allMovies)
 
   def findMovieById(movieId: UUID): Option[Movie] =
     movies.get(movieId.toString)
@@ -60,13 +59,12 @@ object Movies {
     Option(list.toList).filter(_.nonEmpty).map(List[T])
 
   implicit val movieDecoder: Decoder[Movie] = deriveDecoder[Movie]
-  implicit def movieEntityDecoder[F[_]: Concurrent]: EntityDecoder[F, Movie] = jsonOf
   implicit val movieEncoder: Encoder[Movie] = deriveEncoder[Movie]
+
+  implicit def movieEntityDecoder[F[_]: Concurrent]: EntityDecoder[F, Movie] = jsonOf
   implicit def movieEntityEncoder[F[_]]: EntityEncoder[F, Movie] = jsonEncoderOf
 
-  implicit val moviesDecoder: Decoder[List[Movie]] = deriveDecoder[List[Movie]]
   implicit def moviesEntityDecoder[F[_]: Concurrent]: EntityDecoder[F, List[Movie]] = jsonOf
-  implicit val moviesEncoder: Encoder[List[Movie]] = deriveEncoder[List[Movie]]
   implicit def moviesEntityEncoder[F[_]]: EntityEncoder[F, List[Movie]] = jsonEncoderOf
 
 }

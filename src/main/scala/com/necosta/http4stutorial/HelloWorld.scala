@@ -13,20 +13,13 @@ trait HelloWorld[F[_]]{
 object HelloWorld {
   implicit def apply[F[_]](implicit ev: HelloWorld[F]): HelloWorld[F] = ev
 
-  final case class Name(name: String) extends AnyVal
-  /**
-    * More generally you will want to decouple your edge representations from
-    * your internal data structures, however this shows how you can
-    * create encoders for your data.
-    **/
-  final case class Greeting(greeting: String) extends AnyVal
-  object Greeting {
-    implicit val greetingEncoder: Encoder[Greeting] = (a: Greeting) => Json.obj(
-      ("message", Json.fromString(a.greeting)),
-    )
-    implicit def greetingEntityEncoder[F[_]]: EntityEncoder[F, Greeting] =
-      jsonEncoderOf[F, Greeting]
-  }
+  final case class Name(name: String)
+  final case class Greeting(greeting: String)
 
   def impl[F[_]: Applicative]: HelloWorld[F] = (n: HelloWorld.Name) => Greeting("Hello, " + n.name).pure[F]
+
+  implicit val greetingEncoder: Encoder[Greeting] = (a: Greeting) => Json.obj(
+    ("message", Json.fromString(a.greeting)),
+  )
+  implicit def greetingEntityEncoder[F[_]]: EntityEncoder[F, Greeting] = jsonEncoderOf[F, Greeting]
 }
