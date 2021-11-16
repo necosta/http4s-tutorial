@@ -16,21 +16,16 @@ object Http4sTutorialServer {
       client <- Stream.resource(EmberClientBuilder.default[F].build)
       helloWorldAlg = HelloWorld.impl[F]
       jokeAlg = Jokes.impl[F](client)
-      //movieAlg = Movies.impl[F](client)
 
-      // Combine Service Routes into an HttpApp.
-      // Can also be done via a Router if you
-      // want to extract a segments not checked
-      // in the underlying routes.
       httpApp = (
         Http4sTutorialRoutes.helloWorldRoutes[F](helloWorldAlg) <+>
         Http4sTutorialRoutes.jokeRoutes[F](jokeAlg) <+>
-        //Http4sTutorialRoutes.movieRoutes[F] <+>
+        Http4sTutorialRoutes.movieRoutes[F] <+>
         Http4sTutorialRoutes.directorRoutes[F]
       ).orNotFound
 
       // With Middlewares in place
-      finalHttpApp = Logger.httpApp(true, true)(httpApp)
+      finalHttpApp = Logger.httpApp(logHeaders = true, logBody = true)(httpApp)
 
       exitCode <- Stream.resource(
         EmberServerBuilder.default[F]
