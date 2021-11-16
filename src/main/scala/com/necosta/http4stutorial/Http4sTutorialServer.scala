@@ -9,21 +9,24 @@ import org.http4s.ember.server.EmberServerBuilder
 import org.http4s.implicits._
 import org.http4s.server.middleware.Logger
 
-object Http4stutorialServer {
+object Http4sTutorialServer {
 
   def stream[F[_]: Async]: Stream[F, Nothing] = {
     for {
       client <- Stream.resource(EmberClientBuilder.default[F].build)
       helloWorldAlg = HelloWorld.impl[F]
       jokeAlg = Jokes.impl[F](client)
+      //movieAlg = Movies.impl[F](client)
 
       // Combine Service Routes into an HttpApp.
       // Can also be done via a Router if you
       // want to extract a segments not checked
       // in the underlying routes.
       httpApp = (
-        Http4stutorialRoutes.helloWorldRoutes[F](helloWorldAlg) <+>
-        Http4stutorialRoutes.jokeRoutes[F](jokeAlg)
+        Http4sTutorialRoutes.helloWorldRoutes[F](helloWorldAlg) <+>
+        Http4sTutorialRoutes.jokeRoutes[F](jokeAlg) <+>
+        //Http4sTutorialRoutes.movieRoutes[F] <+>
+        Http4sTutorialRoutes.directorRoutes[F]
       ).orNotFound
 
       // With Middlewares in place
