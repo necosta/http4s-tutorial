@@ -1,2 +1,10 @@
+# Ignore binaries
 *.class
-*.log
+target/
+
+# Ignore IntelliJ metadata
+.idea
+.bsp
+
+# Ignore MacOS metadata fs file
+.DS_Store
